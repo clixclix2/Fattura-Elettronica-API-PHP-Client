@@ -1,7 +1,7 @@
 # Fattura-Elettronica-API-PHP-Client
 Client PHP per utilizzare il servizio fattura-elettronica.api.it
 
-Questa libreria PHP consente di inviare e ricevere le fatture elettroniche al/dal Sistema di Interscambio (SDI) dell'Agenzia delle Entrate, tramite il servizio https://fattura-elettronica-api.it
+Questa libreria PHP consente di inviare e ricevere le fatture elettroniche dal tuo gestionale al Sistema di Interscambio (SDI) dell'Agenzia delle Entrate, tramite il servizio https://fattura-elettronica-api.it
 ## Utilizzo
 La libreria è composta da un'unica classe: *FatturaElettronicaApiClient* e da tre metodi: *invia*, *ricevi*, *ottieniPDF*
 
@@ -22,8 +22,7 @@ $feac = new FatturaElettronicaApiClient($username, $password);
  * @param boolean $isTest
  * @return array Ritorna: ack=OK|KO - error=[eventuale errore] - data=array(sdi_identificativo, sdi_messaggio, sdi_fattura, sdi_nome_file)
  */
-function invia($xml, $codiceDestinatario = NULL, $pecDestinatario = NULL, $isTest = false) {
-}
+function invia($xml, $codiceDestinatario = NULL, $pecDestinatario = NULL, $isTest = false) {}
 ```
 ### Ricezione fatture ed aggiornamenti
 ```php
@@ -33,8 +32,7 @@ function invia($xml, $codiceDestinatario = NULL, $pecDestinatario = NULL, $isTes
  * @return array ack=OK|KO - error=[eventuale errore] - data=array di array(sdi_identificativo, sdi_messaggio, sdi_nome_file, sdi_fattura, sdi_fattura_firmata, sdi_data_aggiornamento, sdi_stato)
  * 
  */
-function ricevi($partitaIva = NULL, $isTest = false) {
-}
+function ricevi($partitaIva = NULL, $isTest = false) {}
 ```
 ### Ottenimento del file PDF che rappresenta una fattura elettronica
 ```php
@@ -43,8 +41,7 @@ function ricevi($partitaIva = NULL, $isTest = false) {
  * @param string $sdiIdentificativo
  * @return array ack=OK|KO - error=[eventuale errore] - data= pdf=documento pdf codificato base-64
  */
-function ottieniPDF($sdiIdentificativo) {
-}
+function ottieniPDF($sdiIdentificativo) {}
 ```
 
 ## Esempio di utilizzo
@@ -71,6 +68,7 @@ $fatturaXml = creaFatturaXml($idFattura); // Funzione - da creare - che estrae i
 
 $codiceDestinatarioSDI = '[eventuale codice destinatario, se disponibile]';
 $pecDestinatario = '[eventuale PEC del destinatario, se disponibile]';
+
 $res = $feac->invia($xml, $codiceDestinatarioSDI, $pecDestinatario);
 
 $stato = ($res['ack'] == 'OK' ? 'Inviato' : 'Errore');
@@ -190,16 +188,16 @@ if ($result['ack'] == 'KO') {
 				$dataDocumento = (string)$simpleXml->FatturaElettronicaBody->DatiGenerali->DatiGeneraliDocumento->Data;
 				$numeroDocumento = (string)$simpleXml->FatturaElettronicaBody->DatiGenerali->DatiGeneraliDocumento->Numero;
 				$totaleDocumento = (string)$simpleXml->FatturaElettronicaBody->DatiGenerali->DatiGeneraliDocumento->ImportoTotaleDocumento;
-        $tipoDocumento = (string)$simpleXml->FatturaElettronicaBody->DatiGenerali->DatiGeneraliDocumento->TipoDocumento;
-        if ($tipoDocumento == 'TD01') {
-          $tipoDocumento = 'Fattura';
-        } elseif ($tipoDocumento == 'TD04') {
-          $tipoDocumento = 'Nota di Credito';
-        }
+				$tipoDocumento = (string)$simpleXml->FatturaElettronicaBody->DatiGenerali->DatiGeneraliDocumento->TipoDocumento;
+				if ($tipoDocumento == 'TD01') {
+					$tipoDocumento = 'Fattura';
+				} elseif ($tipoDocumento == 'TD04') {
+					$tipoDocumento = 'Nota di Credito';
+				}
 
 				$directoryPDF = '[percorso sul file system dove salvare il documento PDF]';
 				$nomefile = $directoryPDF . '/' $nomeFornitore . ' - ' . $tipoDocumento . ' ' . $numeroDocumento.' del ' . $dataDocumento . ' Euro ' . $totaleDocumento . '.pdf';
-				$res = file_put_contents($nomefile, base64_decode($resPDF['data']['pdf']));
+				file_put_contents($nomefile, base64_decode($resPDF['data']['pdf']));
 
 			}
 
