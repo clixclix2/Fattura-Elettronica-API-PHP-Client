@@ -149,6 +149,7 @@ class FatturaElettronicaApiClient {
 		}
 	}
 	
+	
 	/**
 	 * Invia i dati all'endpoint del servizio Fattura-Elettronica-Api.it
 	 * @param type $data
