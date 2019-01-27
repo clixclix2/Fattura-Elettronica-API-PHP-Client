@@ -75,14 +75,18 @@ $stato = ($res['ack'] == 'OK' ? 'Inviato' : 'Errore');
 $messaggio = ($res['ack'] == 'OK' ? $res['data']['sdi_messaggio'] : $res['error']);
 $identificativoSDI = ($res['ack'] == 'OK' ? $res['data']['sdi_identificativo'] : '');
 
-if (isset($res['data']) && isset($res['data']['sdi_fattura'])) {
+if ($res['ack'] == 'OK') {
 	$xml = $res['data']['sdi_fattura']; // La fattura elettronica xml finale
+	$nomeFile = $res['data']['sdi_nome_file'];
+} else {
+	$nomeFile = '';
 }
 
 // $database è un oggetto di tipo mysqli
 
 $sqlInsertUpdate = "
 	sdi_fattura = '" . $database->escape_string($xml) . "',
+	sdi_nome_file = '" . $database->escape_string($nomeFile) . "',
 	sdi_stato = '" .  $database->escape_string($stato) . "',
 	sdi_messaggio = '" .  $database->escape_string($messaggio) . "',
 	sdi_identificativo = '" .  $database->escape_string($identificativoSDI) . "',
