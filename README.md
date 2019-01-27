@@ -2,6 +2,9 @@
 Client PHP per utilizzare il servizio fattura-elettronica.api.it
 
 Questa libreria PHP consente di inviare e ricevere le fatture elettroniche dal tuo gestionale al Sistema di Interscambio (SDI) dell'Agenzia delle Entrate, tramite il servizio https://fattura-elettronica-api.it
+
+Per la creazione e la lettura delle fatture elettroniche in formato XML, può essere utilizzata questa libreria: https://github.com/clixclix2/FatturaElettronicaXML
+
 ## Utilizzo
 La libreria è composta da un'unica classe: *FatturaElettronicaApiClient* e da tre metodi: *invia*, *ricevi*, *ottieniPDF*
 
