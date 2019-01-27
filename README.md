@@ -29,7 +29,7 @@ function invia($xml, $codiceDestinatario = NULL, $pecDestinatario = NULL, $isTes
 /**
  * Riceve tutti gli agiornamenti dal SDI: documenti di fattura, note di credito/debito, ed esiti di consegna
  * @param string $partitaIva Per ottenere solo i documenti relativi ad una partita iva, tra quelli associati all'utenza
- * @return array ack=OK|KO - error=[eventuale errore] - data=array di array(sdi_identificativo, sdi_messaggio, sdi_nome_file, sdi_fattura, sdi_fattura_firmata, sdi_data_aggiornamento, sdi_stato)
+ * @return array ack=OK|KO - error=[eventuale errore] - data=array di array(partita_iva, ricezione, sdi_identificativo, sdi_messaggio, sdi_nome_file, sdi_fattura, sdi_fattura_xml, sdi_data_aggiornamento, sdi_stato)
  * 
  */
 function ricevi($partitaIva = NULL, $isTest = false) {}
@@ -52,8 +52,8 @@ CREATE TABLE `fatture_elettroniche` (
   `id_fattura` int(11) DEFAULT NULL, -- RIFERIMENTO ALLA FATTURA SUL PROPRIO DATABASE
   `sdi_identificativo` varchar(36) CHARACTER SET utf8 NOT NULL,
   `sdi_stato` varchar(14) CHARACTER SET utf8 NOT NULL,
-  `sdi_fattura` text CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-  `sdi_fattura_decodificata` text CHARACTER SET utf8 NOT NULL,
+  `sdi_fattura` mediumtext CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `sdi_fattura_xml` mediumtext CHARACTER SET utf8 NOT NULL,
   `sdi_data_aggiornamento` datetime NOT NULL,
   `sdi_messaggio` text CHARACTER SET utf8 NOT NULL,
   `sdi_nome_file` varchar(50) CHARACTER SET utf8 NOT NULL,
@@ -148,7 +148,7 @@ if ($result['ack'] == 'KO') {
 				sdi_identificativo = '" . $database->escape_string($arrDati['sdi_identificativo']) . "',
 				sdi_stato = 'Ricevuto',
 				sdi_fattura = '" . $database->escape_string($arrDati['sdi_fattura']) . "',
-				sdi_fattura_decodificata = '" . $database->escape_string($arrDati['sdi_fattura_decodificata']) . "',
+				sdi_fattura_xml = '" . $database->escape_string($arrDati['sdi_fattura_xml']) . "',
 				sdi_data_aggiornamento = '" . $database->escape_string($arrDati['sdi_data_aggiornamento']) . "',
 				sdi_messaggio = '" . $database->escape_string($arrDati['sdi_messaggio']) . "',
 				sdi_nome_file = '" . $database->escape_string($arrDati['sdi_nome_file']) . "'
@@ -178,7 +178,8 @@ if ($result['ack'] == 'KO') {
 			// Opzionale: Otteniamo una rappresentazione PDF della fattura XML
 			$resPDF = $feac->ottieniPDF($arrDati['sdi_identificativo']);
 			if ($resPDF['ack'] == 'OK') {
-				$simpleXml = simplexml_load_string($arrDati['sdi_fattura']);
+				$fatturaXml = ($arrDati['sdi_fattura_xml'] ? $arrDati['sdi_fattura_xml'] : $arrDati['sdi_fattura']);
+				$simpleXml = simplexml_load_string($fatturaXml);
 				$nomeFornitore = (string)$simpleXml->FatturaElettronicaHeader->CedentePrestatore->DatiAnagrafici->Anagrafica->Denominazione;
 				if ($nomeFornitore == '') {
 					$nomeFornitore = $simpleXml->FatturaElettronicaHeader->CedentePrestatore->DatiAnagrafici->Anagrafica->Cognome . ' ' . $simpleXml->FatturaElettronicaHeader->CedentePrestatore->DatiAnagrafici->Anagrafica->Nome;
