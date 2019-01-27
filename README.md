@@ -52,8 +52,8 @@ CREATE TABLE `fatture_elettroniche` (
   `id_fattura` int(11) DEFAULT NULL, -- RIFERIMENTO ALLA FATTURA SUL PROPRIO DATABASE
   `sdi_identificativo` varchar(36) CHARACTER SET utf8 NOT NULL,
   `sdi_stato` varchar(14) CHARACTER SET utf8 NOT NULL,
-  `sdi_fattura` text CHARACTER SET utf8 NOT NULL,
-  `sdi_fattura_firmata` text CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `sdi_fattura` text CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `sdi_fattura_decodificata` text CHARACTER SET utf8 NOT NULL,
   `sdi_data_aggiornamento` datetime NOT NULL,
   `sdi_messaggio` text CHARACTER SET utf8 NOT NULL,
   `sdi_nome_file` varchar(50) CHARACTER SET utf8 NOT NULL,
@@ -148,7 +148,7 @@ if ($result['ack'] == 'KO') {
 				sdi_identificativo = '" . $database->escape_string($arrDati['sdi_identificativo']) . "',
 				sdi_stato = 'Ricevuto',
 				sdi_fattura = '" . $database->escape_string($arrDati['sdi_fattura']) . "',
-				sdi_fattura_firmata = '" . $database->escape_string($arrDati['sdi_fattura_firmata']) . "',
+				sdi_fattura_decodificata = '" . $database->escape_string($arrDati['sdi_fattura_decodificata']) . "',
 				sdi_data_aggiornamento = '" . $database->escape_string($arrDati['sdi_data_aggiornamento']) . "',
 				sdi_messaggio = '" . $database->escape_string($arrDati['sdi_messaggio']) . "',
 				sdi_nome_file = '" . $database->escape_string($arrDati['sdi_nome_file']) . "'
