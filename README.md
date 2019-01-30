@@ -85,8 +85,6 @@ if ($res['ack'] == 'OK') {
 	$nomeFile = '';
 }
 
-// $database è un oggetto di tipo mysqli
-
 $sqlInsertUpdate = "
 	sdi_fattura = '" . $database->escape_string($xml) . "',
 	sdi_nome_file = '" . $database->escape_string($nomeFile) . "',
@@ -97,9 +95,12 @@ $sqlInsertUpdate = "
 	id_fattura = {$idFattura}
 ";
 
+/** @var mysqli $database */
+
 $lineFE = $database->query("
 	SELECT * FROM fatture_elettroniche WHERE id_fattura = {$idFattura}
 ")->fetch_assoc();
+
 if ($lineFE) { // aggiorniamo un record esistente
 	$database->query("
 		UPDATE fatture_elettroniche
@@ -113,6 +114,7 @@ if ($lineFE) { // aggiorniamo un record esistente
 	");
 }
 ```
+
 ### Ricezione fatture ed aggiornamenti
 ```php
 // Script da invocare periodicamente, per esempio ogni 30 minuti
