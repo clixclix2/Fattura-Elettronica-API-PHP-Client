@@ -86,7 +86,6 @@ if ($res['ack'] == 'OK') {
 }
 
 $sqlInsertUpdate = "
-	id_invoice = {$idFattura},
 	sdi_fattura = '" . $database->escape_string($xml) . "',
 	sdi_nome_file = '" . $database->escape_string($nomeFile) . "',
 	sdi_stato = '" .  $database->escape_string($stato) . "',
