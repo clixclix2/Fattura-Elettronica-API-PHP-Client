@@ -163,7 +163,7 @@ if ($result['ack'] == 'KO') {
 				sdi_nome_file = '" . $database->escape_string($arrDati['sdi_nome_file']) . "'
 			";
 			
-			// verifichiamo se ce labbiamo già
+			// verifichiamo se ce l'abbiamo già
 			$res = $database->query("
 				SELECT sdi_identificativo
 				FROM fatture_elettroniche
