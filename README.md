@@ -72,21 +72,24 @@ $fatturaXml = creaFatturaXml($idFattura); // Funzione - da creare - che estrae i
 $codiceDestinatarioSDI = '[eventuale codice destinatario, se disponibile]';
 $pecDestinatario = '[eventuale PEC del destinatario, se disponibile]';
 
-$res = $feac->invia($xml, $codiceDestinatarioSDI, $pecDestinatario);
-
-$stato = ($res['ack'] == 'OK' ? 'Inviato' : 'Errore');
-$messaggio = ($res['ack'] == 'OK' ? $res['data']['sdi_messaggio'] : $res['error']);
-$identificativoSDI = ($res['ack'] == 'OK' ? $res['data']['sdi_identificativo'] : '');
+$res = $feac->invia($fatturaXml, $codiceDestinatarioSDI, $pecDestinatario);
 
 if ($res['ack'] == 'OK') {
-	$xml = $res['data']['sdi_fattura']; // La fattura elettronica xml finale
+	$stato = 'Inviato';
+	$messaggio = $res['data']['sdi_messaggio'];
+	$identificativoSDI = $res['data']['sdi_identificativo'];
+	$fatturaXml = $res['data']['sdi_fattura']; // La fattura elettronica xml finale
 	$nomeFile = $res['data']['sdi_nome_file'];
 } else {
+	$stato = 'Errore';
+	$messaggio = $res['error'];
+	$identificativoSDI = '';
+	// $fatturaXml = $fatturaXml; // salviamo inalterata la fattura provvisoria
 	$nomeFile = '';
 }
 
 $sqlInsertUpdate = "
-	sdi_fattura = '" . $database->escape_string($xml) . "',
+	sdi_fattura = '" . $database->escape_string($fatturaXml) . "',
 	sdi_nome_file = '" . $database->escape_string($nomeFile) . "',
 	sdi_stato = '" .  $database->escape_string($stato) . "',
 	sdi_messaggio = '" .  $database->escape_string($messaggio) . "',
@@ -105,7 +108,7 @@ if ($lineFE) { // aggiorniamo un record esistente
 	$database->query("
 		UPDATE fatture_elettroniche
 		SET {$sqlInsertUpdate}
-		WHERE id_invoice = {$invoiceId}
+		WHERE id_fattura = {$idFattura}
 	");
 } else { // inseriamo un nuovo record
 	$database->query("
