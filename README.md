@@ -30,7 +30,7 @@ function invia($xml, $codiceDestinatario = NULL, $pecDestinatario = NULL, $isTes
 ### Ricezione fatture ed aggiornamenti
 ```php
 /**
- * Riceve tutti gli agiornamenti dal SDI: documenti di fattura, note di credito/debito, ed esiti di consegna
+ * Riceve tutti gli aggiornamenti dal SDI: documenti di fattura, note di credito/debito, ed esiti di consegna
  * @param string $partitaIva Per ottenere solo i documenti relativi ad una partita iva, tra quelli associati all'utenza
  * @return array ack=OK|KO - error=[eventuale errore] - data=array di array(partita_iva, ricezione, sdi_identificativo, sdi_messaggio, sdi_nome_file, sdi_fattura, sdi_fattura_xml, sdi_data_aggiornamento, sdi_stato)
  * 
