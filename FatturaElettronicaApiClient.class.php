@@ -1,9 +1,8 @@
 <?php
-
 /**
  * Libreria Client PHP per utilizzare il servizio Fattura Elettronica API - https://fattura-elettronica-api.it
  * @author Itala Tecnologia Informatica S.r.l. - www.itala.net
- * @version 1.1
+ * @version 1.2
  */
 class FatturaElettronicaApiClient {
 	
@@ -118,6 +117,124 @@ class FatturaElettronicaApiClient {
 			'sdi_identificativo' => $sdiIdentificativo
 		);
 		return $this->sendToEndpoint($data);
+	}
+	
+	/**
+	 * Estrae l'elenco delle aziende abilitate all'invio/ricezione
+	 * @return array ack=OK|KO - error=[eventuale errore] - data= array(id, nome, ragione_sociale, piva, cfis, ip_ammessi, max_documenti_mese, documento_autorizzazione)
+	 */
+	function elencoAziende() {
+		if (!$this->ensureAuthentication()) {
+			return array(
+				'ack' => 'KO',
+				'error' => $this->authError
+			);
+		}
+		$data = array(
+			'action' => 'SELECT',
+			'token' => $this->authToken,
+			'table' => 'aziende'
+		);
+		return $this->sendToEndpoint($data);
+	}
+	
+	/**
+	 * Aggiunge un'azienda alla lista delle proprie aziende abilitate (se si dispone dei permessi)
+	 * @param array $arrCampi array('ragione_sociale' => 'ragione sociale', 'piva' => 'partita iva', 'cfis' => 'codice fiscale') - charset utf8
+	 * @return array ack=OK|KO - error=[eventuale errore]
+	 */
+	function aggiungiAzienda($arrCampi) {
+		if (!$this->ensureAuthentication()) {
+			return array(
+				'ack' => 'KO',
+				'error' => $this->authError
+			);
+		}
+		$data = array(
+			'action' => 'INSERT',
+			'token' => $this->authToken,
+			'table' => 'aziende',
+			'values' => http_build_query($arrCampi)
+		);
+		return $this->sendToEndpoint($data);
+	}
+	
+	
+	/**
+	 * Elimina un'azienda dalla lista delle proprie aziende abilitate (se si dispone dei permessi)
+	 * @param string $partitaIva la partita iva dell'azienda
+	 * @return array ack=OK|KO - error=[eventuale errore]
+	 */
+	function rimuoviAzienda($partitaIva) {
+		if (!$this->ensureAuthentication()) {
+			return array(
+				'ack' => 'KO',
+				'error' => $this->authError
+			);
+		}
+		$res = $this->sendToEndpoint(array(
+			'action' => 'SELECT',
+			'token' => $this->authToken,
+			'table' => 'aziende',
+			'conditions' => 'piva,eq,' . $partitaIva
+		));
+		if ($res['ack'] == 'KO') {
+			return $res;
+		} elseif (count($res['data']) == 0) {
+			return array(
+				'ack' => 'KO',
+				'error' => 'Azienda non trovata'
+			);
+		} else {
+			return $this->sendToEndpoint(array(
+				'action' => 'DELETE',
+				'token' => $this->authToken,
+				'table' => 'aziende',
+				'idvalue' => $res['data'][0]['id']
+			));
+		}
+	}
+	
+	
+	/**
+	 * Aggiunge un documento di autorizzazione per un'azienda (se si dispone dei permessi)
+	 * @param string $partitaIva la partita iva dell'azienda
+	 * @param string $documento Il contenuto del documento da inviare (preferibilmente PDF)
+	 * @param string $nomeFile il nome del file da inviare
+	 * @return array ack=OK|KO - error=[eventuale errore]
+	 */
+	function inviaDocumentoAutorizzazione($partitaIva, $documento, $nomeFile) {
+		if (!$this->ensureAuthentication()) {
+			return array(
+				'ack' => 'KO',
+				'error' => $this->authError
+			);
+		}
+		$res = $this->sendToEndpoint(array(
+			'action' => 'SELECT',
+			'token' => $this->authToken,
+			'table' => 'aziende',
+			'conditions' => 'piva,eq,' . $partitaIva
+		));
+		if ($res['ack'] == 'KO') {
+			return $res;
+		} elseif (count($res['data']) == 0) {
+			return array(
+				'ack' => 'KO',
+				'error' => 'Azienda non trovata'
+			);
+		} else {
+			return $this->sendToEndpoint(array(
+				'action' => 'UPDATE',
+				'token' => $this->authToken,
+				'table' => 'aziende',
+				'idvalue' => $res['data'][0]['id'],
+				'values' => http_build_query(array(
+					'documento_autorizzazione_file' => base64_encode($documento),
+					'documento_autorizzazione_name' => $nomeFile
+				))
+			));
+		}
 	}
 	
 	
