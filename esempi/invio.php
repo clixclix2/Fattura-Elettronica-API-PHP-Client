@@ -2,6 +2,11 @@
 
 // Invio di una fattura elettronica
 
+$username = '......'; // Username e password forniti dal servizio
+$password = '......';
+require_once __DIR__ . '/../FatturaElettronicaApiClient.class.php';
+$feac = new FatturaElettronicaApiClient($username, $password);
+
 $idFattura = '[identificativo della fattura sul proprio database]';
 $fatturaXml = creaFatturaXml($idFattura); // Funzione - da creare - che estrae i dati della fattura dal proprio database e crea il formato XML nel formato <FatturaElettronica> (vedere esempi)
 
