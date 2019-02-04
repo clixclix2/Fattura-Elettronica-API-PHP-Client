@@ -187,33 +187,6 @@ if ($result['ack'] == 'KO') {
 			}
 			echo "Inserisco fattura SDI {$arrDati['sdi_identificativo']}\n<br>";
 			
-			// Opzionale: Otteniamo una rappresentazione PDF della fattura XML
-			$resPDF = $feac->ottieniPDF($arrDati['sdi_identificativo']);
-			if ($resPDF['ack'] == 'OK') {
-				$fatturaXml = ($arrDati['sdi_fattura_xml'] ? $arrDati['sdi_fattura_xml'] : $arrDati['sdi_fattura']);
-				$simpleXml = simplexml_load_string($fatturaXml);
-				$nomeFornitore = (string)$simpleXml->FatturaElettronicaHeader->CedentePrestatore->DatiAnagrafici->Anagrafica->Denominazione;
-				if ($nomeFornitore == '') {
-					$nomeFornitore = $simpleXml->FatturaElettronicaHeader->CedentePrestatore->DatiAnagrafici->Anagrafica->Cognome . ' ' . $simpleXml->FatturaElettronicaHeader->CedentePrestatore->DatiAnagrafici->Anagrafica->Nome;
-				}
-				$nomeFornitore = str_replace('/', '-', $nomeFornitore);
-				$nomeFornitore = str_replace('\'', '', $nomeFornitore);
-				$dataDocumento = (string)$simpleXml->FatturaElettronicaBody->DatiGenerali->DatiGeneraliDocumento->Data;
-				$numeroDocumento = (string)$simpleXml->FatturaElettronicaBody->DatiGenerali->DatiGeneraliDocumento->Numero;
-				$totaleDocumento = (string)$simpleXml->FatturaElettronicaBody->DatiGenerali->DatiGeneraliDocumento->ImportoTotaleDocumento;
-				$tipoDocumento = (string)$simpleXml->FatturaElettronicaBody->DatiGenerali->DatiGeneraliDocumento->TipoDocumento;
-				if ($tipoDocumento == 'TD01') {
-					$tipoDocumento = 'Fattura';
-				} elseif ($tipoDocumento == 'TD04') {
-					$tipoDocumento = 'Nota di Credito';
-				}
-
-				$directoryPDF = '[percorso sul file system dove salvare il documento PDF]';
-				$nomefile = $directoryPDF . '/' $nomeFornitore . ' - ' . $tipoDocumento . ' ' . $numeroDocumento.' del ' . $dataDocumento . ' Euro ' . $totaleDocumento . '.pdf';
-				file_put_contents($nomefile, base64_decode($resPDF['data']['pdf']));
-
-			}
-
 		}
 		
 	}
