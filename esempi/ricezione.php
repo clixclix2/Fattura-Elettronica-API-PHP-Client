@@ -14,6 +14,7 @@ if ($result['ack'] == 'KO') {
 	echo "Errore: " . $result['error'];
 } else {
 	echo "Elaborazione iniziata: " . date('Y-m-d H:i:s') . "\n<br>";
+	/** @var mysqli $database */
 	foreach ($result['data'] as $arrDati) {
 		if (!$arrDati['ricezione']) {
     
