@@ -55,7 +55,7 @@ if ($tipoTest == 'rimuovi') {
 if ($tipoTest == 'documento') { // caricamento del documento di autorizzazione dell'azienda
 
 	$partitaIva = '12345678901';
-	$filePath = '/shares/_documenti/prezzi.pdf';
+	$filePath = '/path/del/file.pdf';
 	$documento = file_get_contents($filePath);
 	$nomeFile = basename($filePath);
 	
