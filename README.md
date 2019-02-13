@@ -156,6 +156,8 @@ if ($result['ack'] == 'KO') {
     
 			// È la ricezione di un documento
 			
+			$arrDati['sdi_fattura'] = base64_decode($arrDati['sdi_fattura']); // la fattura originale arriva codificata base64
+			
 			$sqlInsertUpdate = "
 				sdi_identificativo = '" . $database->escape_string($arrDati['sdi_identificativo']) . "',
 				sdi_stato = 'Ricevuto',
