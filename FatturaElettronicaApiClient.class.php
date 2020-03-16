@@ -62,6 +62,7 @@ class FatturaElettronicaApiClient {
 	/**
 	 * Invia un documento al SdI tramite Fattura Elettronica API, indicando i dati del documento
 	 * Questo metodo può gestire le casistiche di fatturazine più comuni. Per casistiche più complesse, è necessario generare l'XML completo ed utilizzare il metodo invia()
+	 * Per utilizzare questo metodo, è necessario aver inserito i propri dati aziendali completi nel pannello di controllo fattura-elettronica-api.it, nella sezine "Dati per generazione automatica fatture"
 	 * In caso di esito positivo, la fattura elettronica finale (quella effettivamente trasmessa al SDI) viene ritornata nel campo ['data']['sdi_fattura']
 	 * @param array $datiDestinatario PartitaIVA (opz.), CodiceFiscale (opz.), PEC (opz.), CodiceSDI (opz.), Denominazione, Indirizzo, CAP, Comune, Provincia (opz.)
 	 * @param array $datiDocumento tipo=FATT,NDC,NDD (opz. - default 'FATT'), Data, Numero, Causale (opz.)
