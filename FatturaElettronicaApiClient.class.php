@@ -1,8 +1,8 @@
 <?php
 /**
  * Libreria Client PHP per utilizzare il servizio Fattura Elettronica API - https://fattura-elettronica-api.it
- * @author Itala Tecnologia Informatica S.r.l. - www.itala.net
- * @version 1.2
+ * @author Itala Tecnologia Informatica S.r.l. - www.itala.it
+ * @version 1.3
  */
 class FatturaElettronicaApiClient {
 	
@@ -11,23 +11,31 @@ class FatturaElettronicaApiClient {
 	 * Indicare credenziali utente fornite da Fattura-Elettronica API
 	 * @param string $username
 	 * @param string $password
+	 * @param string $authToken Opzionale: possediamo già il token di autenticazione
 	 */
-	function __construct($username, $password) {
+	function __construct($username, $password, $authToken = NULL) {
 		$this->username = $username;
 		$this->password = $password;
+		
+		if ($authToken) {
+			$this->authToken = $authToken;
+			$this->isAuthenticated = true;
+		}
 	}
 	
 	
 	/**
-	 * Invia un documento (fattura, nota di credito, nota di debito) a Fattura Elettronica API e successivamente a SDI, se non in modalità test
-	 * Il documento XML deve essere inviato privo della sezione <DatiTrasmissione>. In caso di esito positivo, la fattura elettronica finale (quella effettivamente trasmessa al SDI) viene ritornata nel campo ['data']['sdi_fattura']
+	 * Invia un documento (fattura, nota di credito, nota di debito) al SdI, trmamite Fattura Elettronica API
+	 * Il documento XML può essere inviato privo della sezione <DatiTrasmissione>. Se è presente, vengono utilizzati solo i dati CodiceDestinatario o PECDestinatario eventualmente presenti.
+	 * In caso di esito positivo, la fattura elettronica finale (quella effettivamente trasmessa al SDI) viene ritornata nel campo ['data']['sdi_fattura']
+	 * Se la fattura è nel formato FPA12 (verso la pubblica amministrazione)) e non viene trasmessa già firmata digitalmente, il documento andrà firmato digitalemnte manualmente tramite il pannello di controllo fattura-elettronica-api.it
 	 * @param string $xml Documento XML, charset UTF-8
 	 * @param string $codiceDestinatario
 	 * @param string $pecDestinatario
-	 * @param boolean $isTest
+	 * @param boolean $isTest Se true, il documento non viene inoltrato al SdI, viene generata una notifica di consegna di test e la fattura stessa verrà riproposta come ricezione di test
 	 * @return array Ritorna: ack=OK|KO - error=[eventuale errore] - data=array(sdi_identificativo, sdi_messaggio, sdi_fattura, sdi_nome_file)
 	 */
-	function invia($xml, $codiceDestinatario = NULL, $pecDestinatario = NULL, $isTest = false) {
+	function invia($xml, $codiceSDIDestinatario = NULL, $pecDestinatario = NULL, $isTest = false) {
 		if (!$this->ensureAuthentication()) {
 			return array(
 				'ack' => 'KO',
@@ -39,8 +47,8 @@ class FatturaElettronicaApiClient {
 			'token' => $this->authToken,
 			'file' => $xml
 		);
-		if ($codiceDestinatario !== NULL) {
-			$data['codice_destinatario'] = $codiceDestinatario;
+		if ($codiceSDIDestinatario !== NULL) {
+			$data['codice_destinatario'] = $codiceSDIDestinatario;
 		}
 		if ($pecDestinatario !== NULL) {
 			$data['pec_destinatario'] = $pecDestinatario;
@@ -51,11 +59,47 @@ class FatturaElettronicaApiClient {
 		return $this->sendToEndpoint($data);
 	}
 	
+	/**
+	 * Invia un documento al SdI tramite Fattura Elettronica API, indicando i dati del documento
+	 * Questo metodo può gestire le casistiche di fatturazine più comuni. Per casistiche più complesse, è necessario generare l'XML completo ed utilizzare il metodo invia()
+	 * In caso di esito positivo, la fattura elettronica finale (quella effettivamente trasmessa al SDI) viene ritornata nel campo ['data']['sdi_fattura']
+	 * @param array $datiDestinatario PartitaIVA (opz.), CodiceFiscale (opz.), PEC (opz.), CodiceSDI (opz.), Denominazione, Indirizzo, CAP, Comune, Provincia (opz.)
+	 * @param array $datiDocumento tipo=FATT,NDC,NDD (opz. - default 'FATT'), Data, Numero, Causale (opz.)
+	 * @param array $righeDocumento Ogni riga è un array coi campi: Descrizione, PrezzoUnitario, Quantita (opz.), AliquotaIVA (opz. - default 22)
+	 * @param string $partitaIvaMittente In caso di account multi-azienda, specificare la partita iva del Cedente
+	 * @param bool $isTest Se true, il documento non viene inoltrato al SdI, viene generata una notifica di consegna di test e la fattura stessa verrà riproposta come ricezione di test
+	 * @return array
+	 */
+	function inviaConDati($datiDestinatario, $datiDocumento, $righeDocumento, $partitaIvaMittente = null, $isTest = false) {
+		if (!$this->ensureAuthentication()) {
+			return array(
+				'ack' => 'KO',
+				'error' => $this->authError
+			);
+		}
+		$data = array(
+			'action' => 'SEND',
+			'token' => $this->authToken,
+			'dati' => array(
+				'destinatario' => $datiDestinatario,
+				'documento' => $datiDocumento,
+				'righe' => $righeDocumento
+			),
+			'piva' => $partitaIvaMittente
+		);
+		if ($isTest) {
+			$data['test'] = 1;
+		}
+		return $this->sendToEndpoint($data);
+	}
+	
 	
 	/**
-	 * Riceve tutti gli aggiornamenti dal SDI: documenti di fattura, note di credito/debito, ed esiti di consegna
+	 * Riceve tutti gli aggiornamenti dal SdI: documenti di fattura, note di credito/debito, ed esiti di consegna
+	 * In caso di ricezione di un documento, il campo 'ricezione' è valorizzato a 1 e sono presenti i campi dati_mittente, dati_documento e righe_documento, contenenti i dati significativi della fattura
+	 * Una volta ricevuto un documento, questo non viene più trasmesso alle successive invocazioni del metodo ricevi(), salvo andando sul pannello di controllo e reimpostando la spunta "Da leggere"
 	 * @param string $partitaIva Per ottenere solo i documenti relativi ad una partita iva, tra quelli associati all'utenza
-	 * @return array ack=OK|KO - error=[eventuale errore] - data=array di array(partita_iva, ricezione, sdi_identificativo, sdi_messaggio, sdi_nome_file, sdi_fattura, sdi_fattura_xml, sdi_data_aggiornamento, sdi_stato)
+	 * @return array ack=OK|KO - error=[eventuale errore] - data=array di array coi campi: partita_iva, ricezione, sdi_identificativo, sdi_messaggio, sdi_nome_file, sdi_fattura, sdi_fattura_xml, sdi_data_aggiornamento, sdi_stato, dati_mittente, dati_documento, righe_documento
 	 */
 	function ricevi($partitaIva = NULL, $isTest = false) {
 		if (!$this->ensureAuthentication()) {
@@ -238,6 +282,7 @@ class FatturaElettronicaApiClient {
 	}
 	
 	
+	
 	/**
 	 * Assicura che si disponga del token di autenticazione
 	 * Ritorna true se siamo autenticati, false se non siam riusciti ad autenticarci
@@ -268,8 +313,8 @@ class FatturaElettronicaApiClient {
 	
 	/**
 	 * Invia i dati all'endpoint del servizio Fattura-Elettronica-Api.it
-	 * @param type $data
-	 * @return type
+	 * @param array $data
+	 * @return array
 	 */
 	private function sendToEndpoint($data) {
 		$ch = curl_init($this->endpoint);
