@@ -55,6 +55,7 @@ function invia($xml, $codiceDestinatario = NULL, $pecDestinatario = NULL, $isTes
  */
 function inviaConDati($datiDestinatario, $datiDocumento, $righeDocumento, $partitaIvaMittente = null, $isTest = false) {}
 ```
+Per una guida completa ai dati che è possibile inserire in fattura, vedere il paragrafo più sotto "Guida ai Dati per creare una Fattura".
 ### Ricezione fatture e notifiche di consegna
 ```php
 /**
@@ -319,3 +320,32 @@ foreach ($result['data'] as $arrDati) {
 	}
 }
 ```
+## Guida ai Dati per creare una Fattura
+Il metodo inviaConDati() consente la creazione e l'invio di una fattura specificando i soli dati significativi del documento.
+Di seguito una guida completa ai dati che è possibile specificare:
+* $datiDestinatario
+  * PartitaIVA - Opzionale
+  * CodiceFiscale - Opzionale, ma obbligatorio se è omessa la PartitaIVA
+  * PEC - Opzionale, in alternativa a CodiceSDI
+  * CodiceSDI - Opzionale solo se è stato inserito il parametro PEC. Altrimnti, se sconosciuto, inserire sette zeri: 0000000
+  * Denominazione
+  * Indirizzo
+  * CAP
+  * Comune
+  * Provincia - Opzionale
+* $datiDocumento
+  * tipo - Opzionale - Valori ammissibili: FATT,NDC,NDD - Default: 'FATT'
+  * Data - Data del documento - Formato: aaaa-mm-dd
+  * Numero - Numero del documento
+  * Causale - Opzionale - Causale generale del documento
+  * ImportoRitenuta - Opzionale
+  * AliquotaRitenuta - Opzionale - In caso sia specificato ImportoRitenuta, Default: 20
+  * CausalePagamento - Opzionale - In caso sia specificato ImportoRitenuta, Default: 'A' (lavoro autonomo professionale)
+* $righeDocumento
+  * Array di righe con:
+    * Descrizione
+    * PrezzoUnitario
+    * Quantita - Opzionale - Default: 1
+    * AliquotaIVA - Opzionale - Default 22
+    * Natura - Opzionale - Se AliquotaIVA = 0, Default: 'N1'
+    * RiferimentoNormativo - Opzionale
