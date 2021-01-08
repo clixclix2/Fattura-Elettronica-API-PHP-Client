@@ -322,7 +322,9 @@ foreach ($result['data'] as $arrDati) {
 ```
 ## Guida ai Dati per creare una Fattura
 Il metodo inviaConDati() consente la creazione e l'invio di una fattura specificando i soli dati significativi del documento.
-Di seguito una guida completa ai dati che è possibile specificare:
+Di seguito una guida completa ai dati che è possibile specificare.
+In linea generale, i dati da inserire sono queli attesi dal formato Fattura Elettronica, come descritto nelle Specifiche Tecniche dell'
+Agendia delle Entrate.
 * $datiDestinatario
   * PartitaIVA - Opzionale
   * CodiceFiscale - Opzionale, ma obbligatorio se è omessa la PartitaIVA
@@ -341,6 +343,14 @@ Di seguito una guida completa ai dati che è possibile specificare:
   * ImportoRitenuta - Opzionale
   * AliquotaRitenuta - Opzionale - In caso sia specificato ImportoRitenuta, Default: 20
   * CausalePagamento - Opzionale - In caso sia specificato ImportoRitenuta, Default: 'A' (lavoro autonomo professionale)
+  * DatiBollo - Opzionale
+    * BolloVirtuale - valore ammesso: "SI"
+    * ImportoBollo
+  * DatiPagamento - Opzionale
+    * CondizioniPagamento - Opzionale, default "TP02"
+    * ModalitaPagamento - Opzionale, default bonifico "MP05" oppure contanti "MP01" se non è presente l'iban di incasso
+    * DataScadenzaPagamento - Opzionale, formato aaaa-mm-gg
+    * ImportoPagamento - Opzionale - default autocalcolato
 * $righeDocumento
   * Array di righe con:
     * Descrizione
@@ -349,3 +359,12 @@ Di seguito una guida completa ai dati che è possibile specificare:
     * AliquotaIVA - Opzionale - Default 22
     * Natura - Opzionale - Se AliquotaIVA = 0, Default: 'N1'
     * RiferimentoNormativo - Opzionale
+    * ScontoMaggiorazione - Opzionale
+      * Tipo - 'SC' oppure 'MG'
+      * Importo - (oppure Percentuale)
+    * CodiceArticolo - Opzionale
+      * CodiceTipo - es: 'MPN' o 'EAN'
+      * CodiceValore
+    * UnitaMisura - Opzionale
+    * EsigibilitaIVA - Opzionale - valori ammessi: I, D, S
+    
