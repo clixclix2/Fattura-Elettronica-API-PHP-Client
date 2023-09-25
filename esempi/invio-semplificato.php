@@ -43,6 +43,7 @@ $feac = new FatturaElettronicaApiClient($username, $password);
 $res = $feac->inviaConDati($datiDestinatario, $datiDocumento, $righeDocumento);
 
 if ($res['ack'] == 'OK') {
+	$idFatturaElettronicaApi = $res['data']['id'];
 	$identificativoSDI = $res['data']['sdi_identificativo'];
 	$fatturaXml = $res['data']['sdi_fattura'];
 }
