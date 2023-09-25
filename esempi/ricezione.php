@@ -19,7 +19,6 @@ if ($result['ack'] == 'KO') {
 		if (!$arrDati['ricezione']) {
     
 			// È un aggiornamento di un invio
-			$sdiIdentificativo = $arrDati['sdi_identificativo'];
 			if ($arrDati['sdi_stato'] == 'ERRO') {
 				$sdiStato = 'Errore';
 			} elseif ($arrDati['sdi_stato'] == 'CONS') {
@@ -30,14 +29,16 @@ if ($result['ack'] == 'KO') {
 				$sdiStato = $arrDati['sdi_stato'];
 			}
 			$sdiMessaggio = $arrDati['sdi_messaggio'];
+			$sdiIdentificativoDB = $arrDati['sdi_identificativo'] ? intval($arrDati['sdi_identificativo']) : 'NULL';
 			
 			$database->query("
 				UPDATE fatture_elettroniche
 				SET sdi_stato = '{$sdiStato}',
-					sdi_messaggio = '" . $database->escape_string($sdiMessaggio) . "'
-				WHERE sdi_identificativo = '" . $database->escape_string($sdiIdentificativo) . "'
+					sdi_messaggio = '" . $database->escape_string($sdiMessaggio) . "',
+     					sdi_identificativo = {$sdiIdentificativoDB}
+				WHERE id_fattura_elettronica_api = " . intval($arrDati['id']) . "
 			");
-			echo "Aggiorno Stato SDI {$sdiIdentificativo} a {$sdiStato}\n<br>";
+			echo "Aggiorno Stato SDI {$arrDati['id']}/{$sdiIdentificativoDB} a {$sdiStato}\n<br>";
       
 		} else {
     
@@ -52,14 +53,15 @@ if ($result['ack'] == 'KO') {
 				sdi_fattura_xml = '" . $database->escape_string($arrDati['sdi_fattura_xml']) . "',
 				sdi_data_aggiornamento = '" . $database->escape_string($arrDati['sdi_data_aggiornamento']) . "',
 				sdi_messaggio = '" . $database->escape_string($arrDati['sdi_messaggio']) . "',
-				sdi_nome_file = '" . $database->escape_string($arrDati['sdi_nome_file']) . "'
+				sdi_nome_file = '" . $database->escape_string($arrDati['sdi_nome_file']) . "',
+				id_fattura_elettronica_api = " . intval($arrDati['id']) . "
 			";
 			
 			// verifichiamo se ce l'abbiamo già
 			$res = $database->query("
-				SELECT sdi_identificativo
+				SELECT id
 				FROM fatture_elettroniche
-				WHERE sdi_identificativo = '" . $database->escape_string($arrDati['sdi_identificativo']) . "'
+				WHERE id_fattura_elettronica_api = " . intval($arrDati['id']) . "
 			");
 			if ($res->num_rows == 0) {
 				$database->query("
@@ -71,7 +73,7 @@ if ($result['ack'] == 'KO') {
 				$database->query("
 					UPDATE fatture_elettroniche
 					SET {$strInsertUpdate}
-					WHERE sdi_identificativo = '" . $database->escape_string($arrDati['sdi_identificativo']) . "'
+					WHERE id_fattura_elettronica_api = " . intval($arrDati['id']) . "
 				");
 			}
 			echo "Inserisco fattura SDI {$arrDati['sdi_identificativo']}\n<br>";
