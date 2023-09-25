@@ -116,14 +116,14 @@ $res = $feac->invia($fatturaXml, $codiceDestinatarioSDI, $pecDestinatario);
 if ($res['ack'] == 'OK') {
 	$stato = 'Inviato';
 	$messaggio = $res['data']['sdi_messaggio'];
-	$identificativoSDI = $res['data']['sdi_identificativo'];
+	$sdiIidentificativoDB = $res['data']['sdi_identificativo'] ? intval($res['data']['sdi_identificativo']) : 'NULL';
 	$fatturaXml = $res['data']['sdi_fattura']; // La fattura elettronica xml finale
 	$nomeFile = $res['data']['sdi_nome_file'];
 	$idFeaDB = intval($res['data']['id']);
 } else {
 	$stato = 'Errore';
 	$messaggio = $res['error'];
-	$identificativoSDI = '';
+	$sdiIidentificativoDB = 'NULL';
 	// $fatturaXml = $fatturaXml; // salviamo inalterata la fattura provvisoria
 	$nomeFile = '';
 	$idFeaDB = 'NULL';
@@ -134,7 +134,7 @@ $sqlInsertUpdate = "
 	sdi_nome_file = '" . $database->escape_string($nomeFile) . "',
 	sdi_stato = '" .  $database->escape_string($stato) . "',
 	sdi_messaggio = '" .  $database->escape_string($messaggio) . "',
-	sdi_identificativo = '" .  $database->escape_string($identificativoSDI) . "',
+	sdi_identificativo = {sdiIidentificativoDB},
 	sdi_data_aggiornamento = now(),
 	id_fattura = {$idFattura},
 	id_fattura_elettronica_api = {$idFeaDB}
