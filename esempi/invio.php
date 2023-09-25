@@ -21,12 +21,14 @@ if ($res['ack'] == 'OK') {
 	$identificativoSDI = $res['data']['sdi_identificativo'];
 	$fatturaXml = $res['data']['sdi_fattura']; // La fattura elettronica xml finale
 	$nomeFile = $res['data']['sdi_nome_file'];
+	$idFeaDB = intval($res['data']['id']);
 } else {
 	$stato = 'Errore';
 	$messaggio = $res['error'];
 	$identificativoSDI = '';
 	// $fatturaXml = $fatturaXml; // salviamo inalterata la fattura provvisoria
 	$nomeFile = '';
+	$idFeaDB = 'NULL';
 }
 
 $sqlInsertUpdate = "
@@ -36,7 +38,8 @@ $sqlInsertUpdate = "
 	sdi_messaggio = '" .  $database->escape_string($messaggio) . "',
 	sdi_identificativo = '" .  $database->escape_string($identificativoSDI) . "',
 	sdi_data_aggiornamento = now(),
-	id_fattura = {$idFattura}
+	id_fattura = {$idFattura},
+ 	id_fattura_elettronica_api = {$idFeaDB}
 ";
 
 /** @var mysqli $database */
